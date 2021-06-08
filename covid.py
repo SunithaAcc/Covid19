@@ -45,11 +45,13 @@ plt.figure(figsize=(15,5))
 sns.barplot(x=datewise.index.date,y=datewise["Confirmed"]-datewise["Cured"]-datewise["Deaths"])
 plt.title("Distributions plot for Active Cases")
 plt.xticks(rotation=90)
+plt.savefig('static/images/ActiveCases.png')
 
 plt.figure(figsize=(15,5))
 sns.barplot(x=datewise.index.date,y=datewise["Cured"]+datewise["Deaths"])
 plt.title("Distribution plot for Closed Cases")
 plt.xticks(rotation=90)
+plt.savefig('static/images/ClosedCases.png')
 
 datewise["WeekofYear"] = datewise.index.weekofyear
 week_num = []
@@ -70,6 +72,7 @@ plt.plot(week_num,weekwise_deaths,linewidth = 3)
 plt.xlabel("WeekNumber")
 plt.ylabel("Number of cases")
 plt.title("Weekly Progress of different types of cases")
+plt.savefig('static/images/Weekly_DiffCases.png')
 
 fig,(ax1,ax2) = plt.subplots(1,2,figsize=(12,4))
 sns.barplot(x= week_num,y=pd.Series(weekwise_confirmed).diff().fillna(0),ax=ax1)
@@ -80,7 +83,8 @@ ax1.set_ylabel("Numberof Confirmed cases")
 ax2.set_ylabel("Numberof Death cases")
 ax1.set_title("Weekly increase in number of Confirmed cases")
 ax2.set_title("Weekly increase in number of Death Cases")
-plt.show()
+plt.savefig('static/images/WeeklyConfirmed_Death.png')
+#plt.show()
 
 print("Average increase in number of Confirmed cases everyday:",np.round(datewise["Confirmed"].diff().fillna(0).mean()))
 print("Average increase in number of Cured cases everyday:",np.round(datewise["Cured"].diff().fillna(0).mean()))
@@ -95,7 +99,8 @@ plt.ylabel("Daily increase")
 plt.title("Daily increase")
 plt.legend()
 plt.xticks(rotation=90)
-plt.show()
+plt.savefig('static/images/AverageIncrease_Conf_Cured_death.png')
+#plt.show()
 
 datewise["Days Since"]=datewise.index-datewise.index[0]
 datewise["Days Since"] = datewise["Days Since"].dt.days
@@ -114,7 +119,7 @@ prediction_valid_svm = svm.predict(np.array(valid_ml["Days Since"]).reshape(-1,1
 new_date = []
 new_prediction_lr=[]
 new_prediction_svm=[]
-for i in range(1,18):
+for i in range(1,90):
   new_date.append(datewise.index[-1]+timedelta(days=i))
   new_prediction_lr.append(lin_reg.predict(np.array(datewise["Days Since"].max()+i).reshape(-1,1))[0][0])
   new_prediction_svm.append(svm.predict(np.array(datewise["Days Since"].max()+i).reshape(-1,1))[0])
@@ -131,12 +136,24 @@ y_pred["Holt"]=holt.forecast(len(valid))
 
 holt_new_date=[]
 holt_new_prediction=[]
-for i in range(1,18):
+for i in range(1,90):
    holt_new_date.append(datewise.index[-1]+timedelta(days=i))
    holt_new_prediction.append(holt.forecast((len(valid)+i))[-1])
 
 model_predictions["Holts Linear Model Prediction"]= holt_new_prediction
 #model_predictions.head(20)
 
-print(model_predictions.head())
 
+
+plt.figure(figsize=(15,6))
+plt.plot(model_predictions["LR"].fillna(0),label="LR Prediction",linewidth=3)
+plt.plot(model_predictions["SVR"].fillna(0),label="SVR Prediction",linewidth=3)
+plt.plot(model_predictions["Holts Linear Model Prediction"].fillna(0),label="Holts Linear Model Prediction",linewidth=3)
+plt.xlabel("Timestamp")
+plt.ylabel("Daily increase")
+plt.title("Predictions")
+plt.legend()
+plt.xticks(rotation=90)
+plt.savefig('Prediction.png')
+
+print(model_predictions)
